@@ -1,0 +1,14 @@
+# This is where you will put everything that should be ignored when pushing your code to GitHub
+# This prevents from sharing private data (ssh-keys for instance) or any heavy file that would make
+# your repo too big
+
+# For instance, you don't want to push the cache
+*pycache*
+
+# The notebooks' checkpoints can also be a bit tedious, and may cause merge conflicts 
+.ipynb_checkpoints
+.venv
+.vscode
+
+# The data
+data/
