@@ -19,6 +19,7 @@ import numpy as np
 from utilities import ddm, functions, munkres 
 from pprint import pprint
 from scipy.optimize import linear_sum_assignment
+from scipy.signal.windows import blackmanharris
 import matplotlib.pyplot as plt
 
 # ---------------------------------------------------------------------------
@@ -77,11 +78,6 @@ class trackingPartials:
         self.zetaA = max(1e-1, zetaA)/20 * np.log(10)
         self.delta = delta 
 
-        # Calculate analysis window
-        self.win = np.hanning(N)
-        self.winD = np.gradient(self.win)
-
-
         # Initialization 
         self.partials = []
         self.time = []
@@ -106,9 +102,14 @@ class trackingPartials:
         self.varA = -self.zetaA**2 * np.log((self.delta - 1) / (self.delta - 2))
 
         # Window selection
-        if self.overSample > 1:
+
+        if self.overSample > 1 :
+            self.win = functions.bh_window(self.N)
+            self.winD = functions.bh_window(self.N,d=2)
             self.hopFactor = max(8,self.hopFactor)
-        else:
+        else :
+            self.win = functions.hann_window(self.N)
+            self.winD = functions.hann_window(self.N,d=2)
             self.hopFactor = max(4,self.hopFactor)
         
         # Hop size & DFT size
@@ -215,8 +216,11 @@ class trackingPartials:
         Output : vector Alpha of estimated complex parameter
         """
 
-        win = np.hanning(self.N)
-        winD = np.gradient(win)
+        #win = np.hanning(self.N)
+        #winD = np.gradient(win)
+        # win =np.array(blackmanharris(self.N,sym = False))
+        # winD = np.gradient(win)
+
         Ndft = self.Ndft
         ndft = np.arange(0,Ndft,1)
         omega = 2 * np.pi * ndft/Ndft
@@ -224,17 +228,18 @@ class trackingPartials:
 
         n_center = (self.N - (self.N % 2)) // 2
         centering = np.exp(1j * omega * n_center)
-        ft_mat = np.exp(1j * np.outer(t - np.mean(t), omega[:Ndft//2]))
+        
 
         n = np.expand_dims(np.arange(self.N),axis=1) - n_center
-        
+        ft_mat = np.exp(1j*np.outer(n , omega[:Ndft//2].T.conj()))
+
         p = functions.time_vector_computation(n,self.Q)
         pD = functions.derivative_time_vector_computation(n,self.Q)
         
         Rddm = self.Q*self.overSample
-        Alpha, num_peaks, S = ddm.ddm(signal, self.Q, Rddm, self.G_g, win, winD, p, pD, centering, self.Ndft, ft_mat, omega)
-
-        return Alpha, num_peaks, S
+        Alpha, num_peaks, S = ddm.ddm(signal, self.Q, Rddm, self.G_g, self.win, self.winD, p, pD, centering, self.Ndft, ft_mat, omega)
+        
+        return Alpha, num_peaks, S[:,0]
 
     
 
@@ -254,7 +259,7 @@ class trackingPartials:
         tracks_ = []
         num_tracks = 0
         num_active = 0
-
+        Spectro = np.zeros((self.M,self.Ndft),dtype=complex)
         for m in range(self.M) :
 
             # SHORT-TERM PARAMETER ESTIMATION
@@ -265,14 +270,19 @@ class trackingPartials:
             # Short-term signal to estimate parameters 
             yst = self.ypad[int(self.time[m]-n_center):int(self.time[m]+self.N-n_center)]
             
-
             # Saving the estimate of the previous frame : 
             Alpha_last = Alpha  
             num_peaks_last = num_peaks
             
             # Estimate short-term model parameters of each peak using DDM
+            
+            Alpha, num_peaks, Spectro[m,:] = self._parameterEstimation(yst)
+            
+            # plt.close()
+            # plt.figure()
+            # plt.plot(abs(S[:self.Ndft//2]))
+            # plt.show()
 
-            Alpha, num_peaks, S = self._parameterEstimation(yst)
 
             # PARTIAL TRACKING USING HUNGARIAN ALGORITHM
 
@@ -288,6 +298,10 @@ class trackingPartials:
                     # Cost matrix computation for the frame m
                     cost_matrix = self._costMatrixComputation(Alpha_last,Alpha)
 
+                    if m == 40 : 
+                        np.save("cost_matrix_sin8",cost_matrix)
+
+                    np.save("cost",cost_matrix)
                     # Scipy linear_solve to solve the assignement problem
                 
                     column, row = linear_sum_assignment(cost_matrix[:,:,0].astype(float))
@@ -296,12 +310,11 @@ class trackingPartials:
 
                     for k in range(len(column)) : 
                         if (cost_matrix[column[k],row[k],1]=="A"):
-                            final_indx.append([column[k],row[k]])
+                            final_indx.append([row[k],column[k]])
 
                     Assignments = np.array(final_indx)
-
                     num_assignement = len(final_indx)
-                    
+
 
                     # Trajectory labelling
 
@@ -335,14 +348,14 @@ class trackingPartials:
                             continued_tracks = np.array([], dtype=int)  # Ensure an empty integer array
 
                         if num_toBirth > 0:
-                            new_tracks = num_tracks + np.arange(1, num_toBirth + 1)
+                            new_tracks = num_tracks + np.arange(num_toBirth)
                         else:
                             new_tracks = np.array([], dtype=int)  # Ensure an empty integer array
 
                         # Concatenate only when we have valid values
 
                         tracks_ = np.concatenate((continued_tracks, new_tracks))
-                        ii_active_last = num_active_last + np.arange(1, num_toBirth + 1)
+                        ii_active_last = num_active_last + np.arange(num_toBirth)
                         
                         # Save partials for frame m-1 and m
                         
@@ -351,14 +364,18 @@ class trackingPartials:
                         pD = functions.derivative_time_vector_computation(n_center,self.Q)
 
                         # Initialization of the entry of the dictionnary
+
                         if (m-1) not in Partials:
-                            max_size = max(num_active_last + num_toBirth, 10)  
-                            Partials[m-1] = np.zeros((max_size, 4))  
+                            size_m_1 = num_active_last + num_toBirth  
+                            Partials[m-1] = np.zeros((size_m_1, 4))  
+
+                        # add zeros at the end of partials at frame k-1 to get the new birth of partials ...
+                        Partials[m-1] = np.vstack((Partials[m-1],np.zeros((int(num_toBirth),4))))
 
                         if m not in Partials:
-                            max_size = max(num_active + num_toBirth, 10)
-                            Partials[m] = np.zeros((max_size, 4))  
-
+                            size_m = num_active  
+                            Partials[m] = np.zeros((size_m, 4))  
+                        
                         Partials[m-1][ii_active_last, 0:3] = functions.FreqAmpPha(self.fs,Alpha_last[:, Assignments[toBirth, 0]], p, pD)
                         Partials[m-1][ii_active_last, 3] = tracks_[num_toContinue:num_active]
 
@@ -368,3 +385,6 @@ class trackingPartials:
                         num_active_last += num_toBirth
                         num_tracks += num_toBirth
 
+            if m not in Partials :
+                Partials[m] = np.zeros((1,4))           
+        return Spectro, Partials

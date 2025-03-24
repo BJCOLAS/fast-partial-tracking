@@ -1,6 +1,7 @@
 import numpy as np
+import matplotlib.pyplot as plt
 from classes.trackingPartials import trackingPartials  # Importing your class
-from utilities import ddm, functions, munkres
+from utilities import ddm, functions, munkres, plotting
 from pprint import pprint
 from scipy.optimize import linear_sum_assignment
 from scipy.io.wavfile import read, write
@@ -15,15 +16,24 @@ def main():
     
 
     # Parameters 
-    fs = 44100 
+    #fs = 44100 
     # Analysis window length (5ms in the snail analyser)
     #N = 2^ F_nextpow2(.025*fs)-1; 
+
+    #file_descriptor = "/Users/colas/Documents/Programmation/Python/Fast_Partial_Tracking_Python/data/sound/Sin8_A220Hz.wav"
+    file_descriptor = "/Users/colas/Documents/Programmation/Matlab_Projects/Fast-Partial-Tracking/demo_sound.wav"
+    #file_descriptor = "/Users/colas/Documents/Programmation/Python/Fast_Partial_Tracking_Python/data/sound/sine_wave_variating.wav"
+    #file_descriptor = "/Users/colas/Documents/Programmation/Python/Fast_Partial_Tracking_Python/data/sound/sine_wave_1_440.wav"
+
+
+    fs, signal = read(file_descriptor)
+
     # Oversampling facotr  
-    OverSample = 1
+    OverSample = 2
     #  HopSize Factor (HopSize = N / HopFactor)
     HopFactor = 4 
     # Magnitude Thresold for peak picking 
-    Peak_dB  = -50
+    Peak_dB  = -40
     # Polynomial order Q of the short term model : Q = 1  Frequency, Damping
     # Q = 2 Frequency Derivative, Damping Derivative
     # Q = 3 Frequency 2nd Derivative, Damping 2nd Derivative, and so on.
@@ -34,56 +44,22 @@ def main():
     zetaA = 15 # dB
 
     #fs = 44100  # Sampling rate
-    N = 2^F_nextpow2(.025*fs)-1;   # Frame size
-    
-    # Test signal 
-    # t = np.arange(P) / fs
-    # f0 = 500  # Base frequency
-    # f1 = 700  # Base frequency
+    N = 2^F_nextpow2(.025*fs) - 1;   # Frame size
 
-    # InputSignalFrameLast = np.sin(2 * np.pi * f0 * t) + 0.5 * np.sin(2 * np.pi * 2*f0 * t)
-    # InputSignalFrame = np.sin(2 * np.pi * f1 * t) + 0.5 * np.sin(2 * np.pi * 2*f1 * t)
 
-    file_descriptor = "/Users/colas/Documents/Programmation/Python/Fast_Partial_Tracking_Python/data/sound/Sin8_A220Hz.wav"
-    fs, signal = read(file_descriptor)
 
     # Create an instance of TrackPartials
     tracker = trackingPartials(signal, fs , N, HopFactor, OverSample, Peak_dB, Q, delta, zetaF, zetaA)
 
-    # Setup method to initialize the variables used in the tracking
+    # # Setup method to initialize the variables used in the tracking
     trackingPartials.setup(tracker)
-
     # Tracking method 
-    trackingPartials.partialTracking(tracker)
+    Spectro, Partials = trackingPartials.partialTracking(tracker)
 
+    # np.save("Spectro_Sin8",Spectro)
+    # np.save("Tracker_time",tracker.time)
 
-    # win = np.hanning(N)
-    # winD = np.gradient(win)
-    # Ndft = 2048
-    # ndft = np.arange(0,Ndft,1)
-    # omega = 2 * np.pi * ndft/Ndft
-    
-    # n_center = (N - (N % 2)) // 2
-    # centering = np.exp(1j * omega * n_center)
-    # ft_mat = np.exp(1j * np.outer(t - np.mean(t), omega[:Ndft//2]))
-
-    # n = np.expand_dims(np.arange(N),axis=1) - n_center
-    
-    # p = functions.time_vector_computation(n,Q)
-    # pD = functions.derivative_time_vector_computation(n,Q)
-
-    # Alpha_last, num_peaks, S_last = ddm.ddm(InputSignalFrameLast, Q, 10, Peak_dB, win, winD, p, pD, centering, Ndft, ft_mat, omega)
-    # Alpha, num_peaks, S = ddm.ddm(InputSignalFrame, Q, 10, Peak_dB, win, winD, p, pD, centering, Ndft, ft_mat, omega)
-    
-    # matrix_cost = tracker._costMatrixComputation(Alpha_last,Alpha)
-
-    # np.save("matrix_cost",matrix_cost)
-
-    
-    # #Solution = linear_sum_assignment(matrix_cost)
-
-    # #print(Solution)
-
+    plotting.jun_plot_partials(Partials,tracker.time,fs,1000,Spectro,tracker.Ndft)
 
 
 if __name__ == "__main__":

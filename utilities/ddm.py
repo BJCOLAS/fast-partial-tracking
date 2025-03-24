@@ -42,15 +42,15 @@ def pickPeaks(X, G_g):
     for m in range(M):  # loop through each frame ( however only one frame each time it is called ... )
         num = 0
         num_temp = 0
-        for n in range(1, N-3):  # loop through each frequency bin
+        for n in range(2, N-1):  # loop through each frequency bin
             if X[n, m] > G_g:  # check that peak are above the magnitude G_g
                 if X[n, m] > X[n-1, m] and X[n, m] > X[n+1, m]:
                     num_temp += 1
                     left = n - 1
-                    while (left - 1 > 0) and (X[left, m] > X[left - 1, m]):
+                    while (left > 0) and (X[left, m] > X[left - 1, m]):
                         left -= 1
                     right = n + 1
-                    while (right + 1 < N) and (X[right, m] > X[right + 1, m]):
+                    while (right < N-1) and (X[right, m] > X[right + 1, m]):
                         right += 1
                     num += 1
                     idx_peaks[num, m] = n
@@ -173,13 +173,11 @@ def ddm(y, Q, R, G_g, win, winD, p, pD, centering, Ndft, ft_mat, omega):
             elif np.any(np.abs(np.dot(p[[0, N-1], 1:], alpha_temp[1:])) > 1e100):
                 print(f'Infinite edges, skipping peak {jj}')
             else:
+            
+                # Solve for alpha0 (approximate) # see IV. AMPLITUDE AND PHASE ESTIMATION
+                gam = win * np.exp(p[:, 1:] @ alpha_temp[1:])
 
-
-                # Solve for alpha0 (approximate) # see bibliography
-                gam = win * np.exp(np.dot(p[:, 1:], alpha_temp[1:]))
-
-                T_gam = np.dot(ft_mat[:N, int(peakBin[jj].item())].conj().T, gam)
-
+                T_gam = np.dot(ft_mat[:N, int(peakBin[jj].item())].conj().T, gam)               
                 alpha_temp[0] = np.log(Sp[int(peakBin[jj].item()), 0]) - np.log(T_gam)
                 
                 # Final check and save
@@ -198,44 +196,55 @@ def ddm(y, Q, R, G_g, win, winD, p, pD, centering, Ndft, ft_mat, omega):
 # tests
 # --------------------------------------------------------------------------
 
-from scipy.io.wavfile import read
-import functions
+# from scipy.io.wavfile import read
+# import functions
 
-def test_ddm():
+# def test_ddm():
     
-    #fs = 44100  # Sampling rate
-    fs, signal = read("/Users/colas/Documents/Programmation/Python/Fast_Partial_Tracking_Python/data/sound/Sin8_A220Hz.wav")
+#     #fs = 44100  # Sampling rate
+#     fs, signal = read("/Users/colas/Documents/Programmation/Python/Fast_Partial_Tracking_Python/data/sound/Sin8_A220Hz.wav")
     
-    N = 1024  # Frame size
-    t = np.arange(N) / fs
-    f0 = 500  # Base frequency
+#     N = 1024  # Frame size
+#     t = np.arange(N) / fs
     
-    signal = signal[0:N,0]
+#     signal = signal[0:N,0]
 
-    win = np.hanning(N)
-    winD = np.gradient(win)
-    Ndft = 2048
-    ndft = np.arange(0,Ndft,1)
-    omega = 2 * np.pi * ndft/Ndft
+#     win = np.hanning(N)
+#     winD = np.gradient(win)
+#     Ndft = 2048
+#     ndft = np.arange(0,Ndft,1)
+#     omega = 2 * np.pi * ndft/Ndft
     
-    # Fixing polynomial matrices to ensure correct shape
-    Q = 3
-    n_center = (N - (N % 2)) // 2
-    n = np.expand_dims(np.arange(N),axis=1) - n_center
-    p = functions.time_vector_computation(n,Q)
-    pD = functions.derivative_time_vector_computation(n,Q)
+#     # Fixing polynomial matrices to ensure correct shape
+#     Q = 2
+#     n_center = (N - (N % 2)) // 2
+#     n = np.expand_dims(np.arange(N),axis=1) - n_center
+#     p = functions.time_vector_computation(n,Q)
+#     pD = functions.derivative_time_vector_computation(n,Q)
 
-    n_center = (N - (N % 2)) // 2
-    centering = np.exp(1j * omega * n_center)
-    ft_mat = np.exp(1j * np.outer(t - np.mean(t), omega[:Ndft//2]))
-
-    Alpha, num_peaks, S = ddm(signal, 2, 10, -40, win, winD, p, pD, centering, Ndft, ft_mat, omega)
-
-    plt.plot(np.abs(S[:Ndft//2]))
-    plt.title("FFT Magnitude Spectrum")
-    plt.show()
+#     n_center = (N - (N % 2)) // 2
+#     centering = np.exp(1j * omega * n_center)
+#     ft_mat = np.exp(1j*np.outer(n , omega[:Ndft//2].T.conj()))
     
-    print(f"Number of detected peaks: {num_peaks}")
-    print(f"Estimated parameters: {Alpha}")
+#     G_g = -60
 
-test_ddm()
+#     Alpha, num_peaks, S = ddm(signal, Q, 4, G_g, win, winD, p, pD, centering, Ndft, ft_mat, omega)
+
+#     freq = np.arange((Ndft//2))*fs/(Ndft//2)
+
+#     # plt.figure()
+#     # plt.plot(freq, np.abs(S[:Ndft//2]))
+#     # plt.title("FFT Magnitude Spectrum")
+#     # plt.show()
+#     print(Alpha.shape)
+
+#     results = np.zeros((len(Alpha),3))
+#     amp = np.zeros(len(Alpha))
+#     Pha = np.zeros(len(Alpha))
+
+#     for k in range (len(Alpha)): 
+#         results = FreqAmpPha(Alpha,p[n_center],pD[n_center])
+    
+
+# test_ddm()
+

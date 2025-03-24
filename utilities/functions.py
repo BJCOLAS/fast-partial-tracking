@@ -102,3 +102,86 @@ def match_sets(A, B):
         nomatch_B = np.where(validB)[0]  # Indices of unmatched elements in B
         
         return match, nomatch_A, nomatch_B
+
+def bh_window(N, d=1):
+    """
+    Blackman-Harris Window
+    
+    Parameters:
+    N : int
+        Length of window
+    d : int, optional
+        Order of derivative (default is 1)
+        
+    Returns:
+    win : ndarray
+        The computed window
+    n : ndarray
+        The time indices
+    """
+    if N % 2:
+        Nwinhf = (N - 1) // 2
+        n = np.arange(-Nwinhf, Nwinhf + 1)
+    else:
+        Nwinhf = N // 2 - 1
+        n = np.arange(-Nwinhf - 1, Nwinhf + 1)
+    
+    a = np.array([0.35875, 0.48829, 0.14128, 0.01168])
+    in_vals = np.array([2, 4, 6]) * np.pi / N
+    
+    if d == 1:
+        win = a[0] + a[1] * np.cos(in_vals[0] * n) + a[2] * np.cos(in_vals[1] * n) + a[3] * np.cos(in_vals[2] * n)
+    elif d == 2:
+        win = -a[1] * in_vals[0] * np.sin(in_vals[0] * n) \
+              -a[2] * in_vals[1] * np.sin(in_vals[1] * n) \
+              -a[3] * in_vals[2] * np.sin(in_vals[2] * n)
+    elif d == 3:
+        win = -a[1] * in_vals[0]**2 * np.cos(in_vals[0] * n) \
+              -a[2] * in_vals[1]**2 * np.cos(in_vals[1] * n) \
+              -a[3] * in_vals[2]**2 * np.cos(in_vals[2] * n)
+    else:
+        raise ValueError("Derivative order d must be 1, 2, or 3")
+    
+    return win
+
+def hann_window(N, derivative=1):
+    """
+    Hann Window
+    
+    Parameters:
+    N : int
+        Length of window
+    derivative : int, optional
+        Order of derivative (default is 1)
+        
+    Returns:
+    win : ndarray
+        The computed window
+    """
+    if N % 2 == 1:
+        Nhf = (N - 1) // 2
+        n = np.arange(0, N) - Nhf
+        in_val = 2 * np.pi / (N - 1)
+        
+        if derivative == 1:
+            win = 0.5 + 0.5 * np.cos(in_val * n)
+        elif derivative == 2:
+            win = -0.5 * in_val * np.sin(in_val * n)
+        elif derivative == 3:
+            win = -0.5 * in_val**2 * np.cos(in_val * n)
+        else:
+            raise ValueError("Derivative order must be 1, 2, or 3")
+    else:
+        n = np.arange(0, N)
+        in_val = 2 * np.pi / (N - 1)
+        
+        if derivative == 1:
+            win = 0.5 - 0.5 * np.cos(in_val * n)
+        elif derivative == 2:
+            win = 0.5 * in_val * np.sin(in_val * n)
+        elif derivative == 3:
+            win = 0.5 * in_val**2 * np.cos(in_val * n)
+        else:
+            raise ValueError("Derivative order must be 1, 2, or 3")
+    
+    return win

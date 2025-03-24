@@ -4,6 +4,7 @@
 
 # For instance, you don't want to push the cache
 *pycache*
+**/__pycache__/
 
 # The notebooks' checkpoints can also be a bit tedious, and may cause merge conflicts 
 .ipynb_checkpoints
