@@ -38,7 +38,7 @@ def pickPeaks(X, G_g):
     n_peaks = np.zeros([1, M])
     leftBin = np.zeros([N, M])
     rightBin = np.zeros([N, M])
-    X = 20 * np.log10(np.abs(X))
+    X = 20 * np.log10(np.abs(X)+1e-10)
     for m in range(M):  # loop through each frame ( however only one frame each time it is called ... )
         num = 0
         num_temp = 0
@@ -127,8 +127,9 @@ def ddm(y, Q, R, G_g, win, winD, p, pD, centering, Ndft, ft_mat, omega):
     yst = win * y
 
     # DFT (one frame of the signal's STFT)
+    # numpy :
     S = np.array(np.expand_dims(np.fft.fft(yst, Ndft),axis = 1))
-    
+
     # Pick Peaks (Placeholder for peak-picking function)
     peakBin, num_peaks, LeftBin, RightBin = pickPeaks(S[:Ndft // 2], G_g)
 

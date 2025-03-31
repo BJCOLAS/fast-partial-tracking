@@ -135,21 +135,29 @@ class trackingPartials:
 
         max_sample = np.argmax(np.abs(self.ypad))  # Find index of max absolute value in ypad
 
-        n_center = (self.N - (self.N % 2)) // 2
+        n_center = int((self.N-self.N%2) /2 +1)
 
         # Extract the segment of ypad centered at max_sample
         segment = self.ypad[max_sample + np.arange(self.N) - n_center]
 
         # Compute FFT on the windowed segment
-        fft_result = np.fft.fft( np.hanning(self.N)* segment, self.Ndft)
-        
-       
+
+        fft_result = np.fft.fft( self.win * segment, self.Ndft)
+
         # Compute maximum spectral magnitude in dB
-        maxS = 20 * np.log10(np.max(np.abs(fft_result)))
+        maxS = 20 * np.log10(max(np.abs(fft_result)))
+
         # Adjust relative amplitude threshold
         self.G_g = maxS - self.G_g
 
+        # time vector 
 
+        n = np.arange(self.N)-n_center
+        i = np.arange(self.Q+1)
+        self.p = (n ** i[:, np.newaxis]).T
+
+        q = np.arange(1, self.Q + 1)  # Equivalent to (1:Q) in MATLAB, Shape (Q,)
+        self.pD = ((n ** i[:self.Q, np.newaxis]) * q[:, np.newaxis]).T
 
     def _costMatrixComputation(self,Alpha_last,Alpha):
 
@@ -164,13 +172,19 @@ class trackingPartials:
         # Amplitudes/Frequencies at midpoint of analysis frames 
 
         n_center = (self.N-self.N%2) /2 +1
-        n_midpoint = (np.array([-np.floor(self.H/2),np.ceil(self.H/2)]) + n_center).astype(np.int32)
+        n_midpoint = (np.array([-np.floor(self.H/2),np.ceil(self.H/2)]) + n_center-1).astype(int)
   
-        time1 = functions.time_vector_computation(n_midpoint[1],self.Q)   
-        time2 = functions.time_vector_computation(n_midpoint[0],self.Q) 
+        # time1 = functions.time_vector_computation(n_midpoint[1],self.Q)   
+        # time2 = functions.time_vector_computation(n_midpoint[0],self.Q) 
 
-        dTime1 = functions.derivative_time_vector_computation(n_midpoint[1],self.Q)
-        dTime2 = functions.derivative_time_vector_computation(n_midpoint[0],self.Q)
+        # dTime1 = functions.derivative_time_vector_computation(n_midpoint[1],self.Q)
+        # dTime2 = functions.derivative_time_vector_computation(n_midpoint[0],self.Q)
+
+        time1 = self.p[n_midpoint[1],:]
+        time2 = self.p[n_midpoint[0],:]
+        dTime1 = self.pD[n_midpoint[1],:]
+        dTime2 = self.pD[n_midpoint[0],:]
+
 
         # a(+H/2) [k-1]
         mA1 = np.array(np.expand_dims(np.real(time1 @ Alpha_last),axis=1))
@@ -184,14 +198,14 @@ class trackingPartials:
 
 
         #eq. (10)
-        deltaA = mA1.T - mA2
+        deltaA = (mA1.T - mA2).T
         #eq. (11)
-        deltaF = mF1.T - mF2 
+        deltaF = (mF1.T - mF2).T 
 
         #eq. (8)
         Type = "A"
         Type = "B"
-        A_useful = 1 - np.exp(-deltaF**2/(2*self.varF**2)-deltaA**2/(2*self.varA**2))
+        A_useful = 1 - np.exp(-(deltaF**2)/(self.varF)-(deltaA**2)/(self.varA))
         B_spurious = 1 - (1-self.delta)*A_useful 
         
         #eq. (14)
@@ -224,9 +238,9 @@ class trackingPartials:
         Ndft = self.Ndft
         ndft = np.arange(0,Ndft,1)
         omega = 2 * np.pi * ndft/Ndft
-        t = np.arange(self.N) / self.fs
+        #t = np.arange(self.N) / self.fs
 
-        n_center = (self.N - (self.N % 2)) // 2
+        n_center = int((self.N-self.N%2)/2 + 1) 
         centering = np.exp(1j * omega * n_center)
         
 
@@ -246,7 +260,7 @@ class trackingPartials:
     def partialTracking(self) :
     
         # define center of the analysis window 
-        n_center = (self.N - self.N%2)/2 + 1 
+        n_center = int((self.N-self.N%2)/2 + 1) 
 
         # Intilialize Alpha 
         Alpha = [] 
@@ -278,18 +292,10 @@ class trackingPartials:
             
             Alpha, num_peaks, Spectro[m,:] = self._parameterEstimation(yst)
             
-            # plt.close()
-            # plt.figure()
-            # plt.plot(abs(S[:self.Ndft//2]))
-            # plt.show()
-
 
             # PARTIAL TRACKING USING HUNGARIAN ALGORITHM
 
             if ( m > 0 ) : # we cannot track the first frame
-
-                ## TODO : Find the assignement problem index solution
-                # Identify in the solution the non zeros (not necessary with the scipy solver)
 
                 num_assignement = 0
 
@@ -298,19 +304,22 @@ class trackingPartials:
                     # Cost matrix computation for the frame m
                     cost_matrix = self._costMatrixComputation(Alpha_last,Alpha)
 
-                    if m == 40 : 
-                        np.save("cost_matrix_sin8",cost_matrix)
-
-                    np.save("cost",cost_matrix)
                     # Scipy linear_solve to solve the assignement problem
                 
                     column, row = linear_sum_assignment(cost_matrix[:,:,0].astype(float))
-                    
+
+                    # Munkres algorithm to solve the assignement problem
+
+                    # munk = munkres.Munkres()
+                    # output = np.array(munk.compute(cost_matrix[:,:,0].astype(float)))
+                    # column = output[:,0]
+                    # row = output[:,1]
+
                     final_indx = []
 
                     for k in range(len(column)) : 
                         if (cost_matrix[column[k],row[k],1]=="A"):
-                            final_indx.append([row[k],column[k]])
+                            final_indx.append([column[k],row[k]])
 
                     Assignments = np.array(final_indx)
                     num_assignement = len(final_indx)
@@ -360,8 +369,10 @@ class trackingPartials:
                         # Save partials for frame m-1 and m
                         
                         # polynomiam time vectors
-                        p = functions.time_vector_computation(n_center,self.Q)
-                        pD = functions.derivative_time_vector_computation(n_center,self.Q)
+                        # p = functions.time_vector_computation(n_center,self.Q)
+                        # pD = functions.derivative_time_vector_computation(n_center,self.Q)
+                        p = self.p[n_center]
+                        pD = self.pD[n_center]
 
                         # Initialization of the entry of the dictionnary
 

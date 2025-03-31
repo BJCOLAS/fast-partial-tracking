@@ -38,7 +38,7 @@ def FreqAmpPha(fs, alpha, p, pPrime) :
     """
     # Eq. (7)
 
-    freq = np.array(np.expand_dims(fs/(2*np.pi) * np.imag(pPrime @ alpha[1:, :]),axis=1))
+    freq = np.array(np.expand_dims( np.imag(pPrime @ alpha[1:, :]),axis=1))
 
     # Eq. (6)
 
