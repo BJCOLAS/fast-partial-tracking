@@ -2,21 +2,121 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Mes fichiers audio</title>
+  <title>Projet INTIM – Analyse/Synthèse du Timbre</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;500&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(to right, #f0f4f8, #dbe9f4);
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+
+    header {
+      background-color: #2c3e50;
+      color: white;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 2rem;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 1rem;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      color: #2c3e50;
+      margin-top: 2rem;
+    }
+
+    p {
+      line-height: 1.6;
+    }
+
+    audio {
+      width: 100%;
+      margin: 1rem 0;
+    }
+
+    .audio-block {
+      margin-bottom: 2rem;
+    }
+
+    footer {
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.9rem;
+      color: #666;
+    }
+  </style>
 </head>
 <body>
-  <h1>Bienvenue sur ma page audio 🎵</h1>
 
-  <p>Écoute ce son :</p>
-  <audio controls>
-    <source src="audio1.mp3" type="audio/mpeg">
-    Ton navigateur ne supporte pas l'audio.
-  </audio>
+  <header>
+    <h1>Projet INTIM – Analyse/Synthèse du Timbre Musical</h1>
+    <p>Stage Master ATIAM – Équipe S3AM (CNRS)</p>
+  </header>
 
-  <p>Un autre fichier :</p>
-  <audio controls>
-    <source src="audio2.ogg" type="audio/ogg">
-    Ton navigateur ne supporte pas l'audio.
-  </audio>
+  <div class="container">
+    <h2>🎯 Objectifs du projet</h2>
+    <p>
+      Le projet INTIM (INteractive analysis/synthesis of musical TIMbre) vise à développer des outils pour analyser, visualiser et synthétiser le timbre musical en temps réel. Le timbre, défini comme l’ensemble des éléments d’un son permettant de le différencier d’un autre en dehors de sa hauteur et de son amplitude, reste difficile à caractériser.
+    </p>
+    <p>
+      Ce stage se concentre sur l’objectif 2 du projet : la création d’un outil d’analyse/synthèse additive permettant de reproduire et contrôler le timbre avec ses fluctuations fines, en compatibilité temps réel.
+    </p>
+
+    <h2>🔬 Méthodologie</h2>
+    <p>
+      Le rapport est structuré en trois parties :
+      <ul>
+        <li>Développement des méthodes d’analyse/synthèse</li>
+        <li>Implémentation algorithmique et tests numériques</li>
+        <li>Exploration des capacités de contrôle du timbre et capture de ses fluctuations</li>
+      </ul>
+    </p>
+
+    <h2>🎧 Échantillons audio</h2>
+
+    <div class="audio-block">
+      <p><strong>Exemple 1 – Timbre original</strong></p>
+      <audio controls>
+        <source src="audio/original.mp3" type="audio/mpeg">
+        Votre navigateur ne supporte pas l'audio.
+      </audio>
+    </div>
+
+    <div class="audio-block">
+      <p><strong>Exemple 2 – Synthèse additive</strong></p>
+      <audio controls>
+        <source src="audio/synthese.mp3" type="audio/mpeg">
+        Votre navigateur ne supporte pas l'audio.
+      </audio>
+    </div>
+
+    <div class="audio-block">
+      <p><strong>Exemple 3 – Fluctuations contrôlées</strong></p>
+      <audio controls>
+        <source src="audio/fluctuations.mp3" type="audio/mpeg">
+        Votre navigateur ne supporte pas l'audio.
+      </audio>
+    </div>
+  </div>
+
+  <footer>
+    © 2025 – Projet INTIM | CNRS – ATIAM – Équipe S3AM
+  </footer>
+
 </body>
 </html>
+
