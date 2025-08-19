@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+m<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
@@ -64,7 +64,7 @@
 
   <header>
     <h1>Projet INTIM – Analyse/Synthèse du Timbre Musical</h1>
-    <p>Stage Master ATIAM – Équipe S3AM (CNRS)</p>
+    <p>Benjamin COLAS- Stage Master ATIAM – Équipe S3AM (CNRS)</p>
   </header>
 
   <div class="container">
@@ -77,10 +77,10 @@
     </p>
 
 
-    <h2>Échantillons audio</h2>
+    <h2>Comparaison des algorithmes </h2>
 
     <div class="audio-block">
-      <p><strong>Exemple 1 – Timbre original</strong></p>
+      <p><strong> Audio – Etat de l'art Depalle et Neri</strong></p>
       <audio controls>
         <source src="data/sound/Sin8_A220Hz.wav" type="audio/mpeg">
         Votre navigateur ne supporte pas l'audio.
@@ -88,20 +88,102 @@
     </div>
 
     <div class="audio-block">
-      <p><strong>Exemple 2 – Synthèse additive</strong></p>
+      <p><strong>Audio - Algorithme proposé au sein du projet INTIM</strong></p>
       <audio controls>
         <source src="audio/synthese.mp3" type="audio/mpeg">
         Votre navigateur ne supporte pas l'audio.
       </audio>
     </div>
 
-    <div class="audio-block">
-      <p><strong>Exemple 3 – Fluctuations contrôlées</strong></p>
+    <h2> Test de notre algorithme pour des sons au timbre complexe </h2>
+
+      <div class="audio-block">
+      <p><strong>Audio - Son de hautbois original</strong></p>
       <audio controls>
-        <source src="audio/fluctuations.mp3" type="audio/mpeg">
+        <source src="audio/synthese.mp3" type="audio/mpeg">
         Votre navigateur ne supporte pas l'audio.
       </audio>
     </div>
+
+          <div class="audio-block">
+      <p><strong>Audio - Son de hautbois synthétisé avec seuil à 50dB</strong></p>
+      <audio controls>
+        <source src="audio/synthese.mp3" type="audio/mpeg">
+        Votre navigateur ne supporte pas l'audio.
+      </audio>
+    </div>
+
+              <div class="audio-block">
+      <p><strong>Audio - Son de hautbois synthétisé avec seuil à 70dB</strong></p>
+      <audio controls>
+        <source src="audio/synthese.mp3" type="audio/mpeg">
+        Votre navigateur ne supporte pas l'audio.
+      </audio>
+    </div>
+
+
+      <div class="audio-block">
+      <p><strong>Audio - Son de voix féminine original</strong></p>
+      <audio controls>
+        <source src="audio/synthese.mp3" type="audio/mpeg">
+        Votre navigateur ne supporte pas l'audio.
+      </audio>
+    </div>
+
+          <div class="audio-block">
+      <p><strong>Audio - Son de voix féminine synthétisé avec seuil à 50dB</strong></p>
+      <audio controls>
+        <source src="audio/synthese.mp3" type="audio/mpeg">
+        Votre navigateur ne supporte pas l'audio.
+      </audio>
+    </div>
+
+              <div class="audio-block">
+      <p><strong>Audio - Son de voix féminine synthétisé avec seuil à 70dB</strong></p>
+      <audio controls>
+        <source src="audio/synthese.mp3" type="audio/mpeg">
+        Votre navigateur ne supporte pas l'audio.
+      </audio>
+    </div>
+
+    <h2> Résultat de l'algorithme C++ </h2>
+
+      <div class="audio-block">
+      <p><strong>Audio - Son de hautbois synthétisé avec seuil à -50dB, temps moyen de computation par trame : </strong></p>
+      <audio controls>
+        <source src="audio/synthese.mp3" type="audio/mpeg">
+        Votre navigateur ne supporte pas l'audio.
+      </audio>
+    </div>
+
+      <div class="audio-block">
+      <p><strong>Audio - Son de voix féminine synthétisé avec seuil à 70dB, temps moyen de computation par trame : </strong></p>
+      <audio controls>
+        <source src="audio/synthese.mp3" type="audio/mpeg">
+        Votre navigateur ne supporte pas l'audio.
+      </audio>
+    </div>
+
+    <h2> Proposition de modellage du timbre </h2>
+
+
+          <div class="audio-block">
+      <p><strong>Audio - Application d'un simple LFO </strong></p>
+      <audio controls>
+        <source src="audio/synthese.mp3" type="audio/mpeg">
+        Votre navigateur ne supporte pas l'audio.
+      </audio>
+    </div>
+
+
+          <div class="audio-block">
+      <p><strong>Audio - Application d'un effet de masse </strong></p>
+      <audio controls>
+        <source src="audio/synthese.mp3" type="audio/mpeg">
+        Votre navigateur ne supporte pas l'audio.
+      </audio>
+    </div>
+
   </div>
 
   <footer>
