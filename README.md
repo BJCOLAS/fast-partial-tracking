@@ -1,12 +1,15 @@
-# Fast Partial Tracking Python
+# CNRS_INTIM Project : INteractive analysis of musiscal TIMbre
 
-Python code implementing the partial tracking emthod published in the following paper : 
+Ce dépot github présente le travail réalisé dans le cadre d'un stage de master intitulé : 
 
-J. Neri and P. Depalle, "<a href="http://dafx2018.web.ua.pt/papers/DAFx2018_paper_26.pdf" target="_blank">**Fast Partial Tracking of Audio with Real-Time Capability through Linear Programming**</a>," In *Proceedings of the 21st International Conference on Digital Audio Effects (DAFx-18)*, Aveiro, Portugal, pp. 326-333, Sep. 2018.
+##  Analyse/synthèse additive de haute précision pour reproduire et contrôler le timbre et ses fluctuations temporelles
 
+# Contenu :
 
-The code is heavily inspired by the Matlab code provided in  "<a href="https://github.com/jundsp/Fast-Partial-Tracking.git" target="_blank">**Github Fast-Partial-Tracking**</a>,"
+On retrouve dans ce dépot : 
 
+* Un projet python regroupant la reproduction de l'état de l'art en matière de suivi de partiel, notre méthode implémentée dans un objectif de réalisation en temps réel
 
-# Summary 
+* Un projet C++ regroupant la bibliothèque de classes et méthodes dans l'objectif d'être intégrée dans le cadre du projet INTIM
 
+* Une page d'écoute des résultats audio associés au mémoire de stage 
